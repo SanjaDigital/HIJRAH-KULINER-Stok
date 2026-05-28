@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>StokKu - Manajemen Stok Produk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg:#0C0E11;--bg2:#12151A;--bg-card:#181C22;--bg-card-h:#1F242C;
+            --bg-input:#10131A;--fg:#F0EDE6;--fg-m:#6B7080;
+            --acc:#E8A838;--acc-d:rgba(232,168,56,.1);--acc-m:rgba(232,168,56,.25);
+            --ok:#34D399;--ok-d:rgba(52,211,153,.1);
+            --err:#F87171;--err-d:rgba(248,113,113,.1);
+            --inf:#60A5FA;--inf-d:rgba(96,165,250,.1);
+            --brd:#252930;--r:16px;--rs:12px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;min-height:100dvh;overflow-x:hidden}
+        .glow{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+        .glow-1{top:-100px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(232,168,56,.07),transparent 70%);animation:pu 8s ease-in-out infinite}
+        .glow-2{bottom:-80px;left:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(52,211,153,.04),transparent 70%);animation:pu 11s ease-in-out infinite reverse}
+        @keyframes pu{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+        .app{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh}
+        .login-scr{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:32px 24px;text-align:center}
+        .login-logo{width:72px;height:72px;background:linear-gradient(135deg,var(--acc),#C4841E);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:30px;color:#0C0E11;margin-bottom:20px;box-shadow:0 8px 32px rgba(232,168,56,.25)}
+        .login-t{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;margin-bottom:6px}
+        .login-t span{color:var(--acc)}
+        .login-sub{color:var(--fg-m);font-size:14px;margin-bottom:36px;line-height:1.6}
+        .role-cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:340px}
+        .role-card{background:var(--bg-card);border:1.5px solid var(--brd);border-radius:var(--r);padding:22px 20px;cursor:pointer;transition:all .25s;text-align:left;display:flex;align-items:center;gap:16px}
+        .role-card:active{transform:scale(.97)}
+        .role-card:hover{border-color:var(--acc);background:var(--bg-card-h)}
+        .role-ic{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+        .role-ic.adm{background:var(--acc-d);color:var(--acc)}
+        .role-ic.sup{background:var(--ok-d);color:var(--ok)}
+        .role-info h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:3px}
+        .role-info p{font-size:12px;color:var(--fg-m);line-height:1.4}
+        .auth-scr{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:32px 24px}
+        .auth-scr.on{display:flex}
+        .auth-box{width:100%;max-width:360px}
+        .auth-back{background:none;border:none;color:var(--fg-m);font-size:13px;font-family:'DM Sans';cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:28px;padding:4px 0}
+        .auth-back:active{color:var(--fg)}
+        .auth-t{font-family:'Space Grotesk';font-size:22px;font-weight:700;margin-bottom:6px;text-align:center}
+        .auth-d{font-size:13px;color:var(--fg-m);text-align:center;margin-bottom:28px}
+        .pin-grp{display:flex;gap:10px;justify-content:center;margin-bottom:8px}
+        .pin-d{width:50px;height:58px;text-align:center;font-family:'Space Grotesk';font-size:24px;font-weight:700;background:var(--bg-input);border:1.5px solid var(--brd);border-radius:var(--rs);color:var(--fg);outline:none;transition:border-color .2s,box-shadow .2s}
+        .pin-d:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-d)}
+        .pin-info{background:var(--inf-d);border:1px solid rgba(96,165,250,.15);border-radius:var(--rs);padding:14px 16px;margin-bottom:18px;display:flex;gap:12px;align-items:flex-start}
+        .pin-info i{color:var(--inf);margin-top:2px}
+        .pin-info p{font-size:12px;color:var(--inf);line-height:1.6}
+        .main-app{display:none;padding-bottom:92px}
+        .main-app.on{display:block}
+        .app-hdr{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(12,14,17,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:100;border-bottom:1px solid var(--brd)}
+        .hdr-l{display:flex;align-items:center;gap:10px}
+        .hdr-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--acc),#C4841E);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#0C0E11}
+        .hdr-brand{font-family:'Space Grotesk';font-size:18px;font-weight:700}
+        .hdr-brand span{color:var(--acc)}
+        .hdr-r{display:flex;align-items:center;gap:8px}
+        .hdr-user{font-size:11px;color:var(--fg-m);text-align:right;line-height:1.3}
+        .hdr-user strong{color:var(--fg);font-weight:600;display:block;font-size:12px}
+        .hdr-btn{width:36px;height:36px;border-radius:10px;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .2s}
+        .hdr-btn:active{filter:brightness(1.2)}
+        .btn-settings{background:var(--acc-d);color:var(--acc)}
+        .btn-logout{background:var(--err-d);color:var(--err)}
+        .page{display:none;padding:20px;animation:fu .3s ease}
+        .page.on{display:block}
+        @keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+        .st{background:var(--bg-card);border:1px solid var(--brd);border-radius:var(--rs);padding:16px 14px;position:relative;overflow:hidden;transition:transform .15s}
+        .st:active{transform:scale(.97)}
+        .st-i{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:10px}
+        .st-v{font-family:'Space Grotesk';font-size:26px;font-weight:700;line-height:1;margin-bottom:3px}
+        .st-l{font-size:11px;color:var(--fg-m);font-weight:500}
+        .st.ca .st-i{background:var(--acc-d);color:var(--acc)}
+        .st.cs .st-i{background:var(--ok-d);color:var(--ok)}
+        .st.ce .st-i{background:var(--err-d);color:var(--err)}
+        .st.ci .st-i{background:var(--inf-d);color:var(--inf)}
+        .sec-t{font-family:'Space Grotesk';font-size:16px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .badge{font-family:'DM Sans';font-size:11px;font-weight:600;background:var(--acc-d);color:var(--acc);padding:2px 9px;border-radius:20px}
+        .badge-ok{background:var(--ok-d);color:var(--ok)}
+        .lw{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+        .li{background:var(--bg-card);border:1px solid var(--brd);border-radius:var(--rs);padding:14px;display:flex;align-items:center;gap:12px;transition:background .15s,transform .12s;cursor:pointer}
+        .li:active{transform:scale(.98);background:var(--bg-card-h)}
+        .li-av{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;font-family:'Space Grotesk'}
+        .li-if{flex:1;min-width:0}
+        .li-n{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .li-s{font-size:11px;color:var(--fg-m);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .li-r{text-align:right;flex-shrink:0}
+        .li-r .nm{font-family:'Space Grotesk';font-weight:700;font-size:16px}
+        .li-r .un{font-size:10px;color:var(--fg-m)}
+        .fg{margin-bottom:14px}
+        .fl{display:block;font-size:11px;font-weight:600;color:var(--fg-m);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+        .fi,.fs{width:100%;padding:12px 14px;background:var(--bg-input);border:1.5px solid var(--brd);border-radius:var(--rs);color:var(--fg);font-size:14px;font-family:'DM Sans';outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+        .fi:focus,.fs:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-d)}
+        .fi::placeholder{color:var(--fg-m);opacity:.4}
+        .fi[readonly]{opacity:.55;cursor:default}
+        .fs{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7080' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+        .fs option{background:var(--bg-card);color:var(--fg)}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:var(--rs);border:none;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;width:100%}
+        .btn:active{transform:scale(.97)}
+        .btn-p{background:linear-gradient(135deg,var(--acc),#C4841E);color:#0C0E11}
+        .btn-p:active{filter:brightness(1.1)}
+        .btn-o{background:transparent;border:1.5px solid var(--brd);color:var(--fg)}
+        .btn-o:active{background:var(--bg-card)}
+        .btn-d{background:var(--err-d);color:var(--err)}
+        .btn-w{background:rgba(251,146,60,.1);color:#FB923C;border:1px solid rgba(251,146,60,.2)}
+        .btn-w:active{background:rgba(251,146,60,.18)}
+        .btn-sm{padding:10px 16px;font-size:13px;width:auto}
+        .btn-f{width:100%}
+        .today-b{background:linear-gradient(135deg,rgba(232,168,56,.12),rgba(232,168,56,.04));border:1px solid rgba(232,168,56,.2);border-radius:var(--r);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+        .today-ic{width:46px;height:46px;background:var(--acc-m);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--acc);flex-shrink:0}
+        .today-if{flex:1}
+        .today-if .day{font-family:'Space Grotesk';font-size:15px;font-weight:600}
+        .today-if .date{font-size:12px;color:var(--fg-m);margin-top:2px}
+        .today-tm{font-family:'Space Grotesk';font-size:22px;font-weight:700;color:var(--acc);flex-shrink:0}
+        .qi{background:var(--bg-card);border:1.5px solid var(--brd);border-radius:var(--r);padding:20px 18px;margin-bottom:22px}
+        .qi-t{font-family:'Space Grotesk';font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .qi-t i{color:var(--acc)}
+        .info-box{background:var(--inf-d);border:1px solid rgba(96,165,250,.15);border-radius:var(--rs);padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
+        .info-box i{color:var(--inf);margin-top:2px;flex-shrink:0}
+        .info-box p{font-size:12px;color:var(--inf);line-height:1.6}
+        .warn-box{background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.15);border-radius:var(--rs);padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
+        .warn-box i{color:#FB923C;margin-top:2px;flex-shrink:0}
+        .warn-box p{font-size:12px;color:#FB923C;line-height:1.6}
+        .hi{background:var(--bg-card);border:1px solid var(--brd);border-radius:var(--rs);padding:14px;margin-bottom:8px}
+        .hi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+        .hi-date{font-size:11px;color:var(--fg-m);font-weight:500}
+        .hi-badge{font-size:10px;background:var(--ok-d);color:var(--ok);padding:3px 10px;border-radius:20px;font-weight:600}
+        .hi-name{font-weight:600;font-size:14px;margin-bottom:3px}
+        .hi-det{font-size:12px;color:var(--fg-m)}
+        .srch{position:relative;margin-bottom:14px}
+        .srch i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--fg-m);font-size:13px}
+        .srch input{width:100%;padding:11px 14px 11px 38px;background:var(--bg-input);border:1.5px solid var(--brd);border-radius:var(--rs);color:var(--fg);font-size:13px;font-family:'DM Sans';outline:none;transition:border-color .2s}
+        .srch input:focus{border-color:var(--acc)}
+        .srch input::placeholder{color:var(--fg-m);opacity:.4}
+        .empty{text-align:center;padding:44px 20px;color:var(--fg-m)}
+        .empty i{font-size:44px;margin-bottom:14px;opacity:.25;display:block}
+        .empty p{font-size:13px;line-height:1.6}
+        .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(24,28,34,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--brd);display:flex;padding:6px 0;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:200}
+        .bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:none;background:none;color:var(--fg-m);font-size:10px;font-family:'DM Sans';font-weight:500;cursor:pointer;transition:color .2s;position:relative}
+        .bn i{font-size:18px;transition:transform .2s}
+        .bn.on{color:var(--acc)}
+        .bn.on i{transform:scale(1.1)}
+        .bn.on::before{content:'';position:absolute;top:-6px;width:22px;height:3px;background:var(--acc);border-radius:0 0 3px 3px}
+        .fab{position:fixed;bottom:86px;right:max(18px,calc((100vw - 480px)/2 + 18px));width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,var(--acc),#C4841E);color:#0C0E11;border:none;font-size:20px;cursor:pointer;z-index:150;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(232,168,56,.3);transition:transform .15s}
+        .fab:active{transform:scale(.92)}
+        .fab.hide{display:none}
+        .mbg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:500;display:none;align-items:flex-end;justify-content:center}
+        .mbg.on{display:flex;animation:mbi .2s ease}
+        @keyframes mbi{from{opacity:0}to{opacity:1}}
+        .ms{background:var(--bg-card);border-radius:20px 20px 0 0;padding:22px 20px 30px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;animation:msu .3s ease;border-top:1px solid var(--brd)}
+        @keyframes msu{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .mh{width:36px;height:4px;background:var(--brd);border-radius:4px;margin:0 auto 18px}
+        .mt{font-family:'Space Grotesk';font-size:17px;font-weight:700;margin-bottom:18px}
+        .dr{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--brd);font-size:13px}
+        .dr:last-child{border-bottom:none}
+        .dr .dl{color:var(--fg-m)}
+        .dr .dv{font-weight:600;text-align:right;max-width:60%}
+        .cr{display:flex;gap:10px;margin-top:18px}
+        .cr .btn{flex:1}
+        .pin-disp{font-family:'Space Grotesk';letter-spacing:4px;font-size:14px;color:var(--acc);font-weight:700}
+        .set-item{display:flex;align-items:center;gap:14px;padding:16px 0;border-bottom:1px solid var(--brd);cursor:pointer;transition:opacity .15s}
+        .set-item:active{opacity:.7}
+        .set-item:last-child{border-bottom:none}
+        .set-ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+        .set-if{flex:1}
+        .set-if h4{font-size:14px;font-weight:600;margin-bottom:2px}
+        .set-if p{font-size:11px;color:var(--fg-m)}
+        .set-arr{color:var(--fg-m);font-size:13px}
+        .tw{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:calc(100% - 36px);max-width:440px}
+        .toast{padding:13px 16px;border-radius:var(--rs);font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;animation:ti .3s ease,to .3s ease 2.5s forwards;pointer-events:auto;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+        .toast.success{background:#142420;color:var(--ok);border:1px solid rgba(52,211,153,.18)}
+        .toast.error{background:#241414;color:var(--err);border:1px solid rgba(248,113,113,.18)}
+        .toast.info{background:#141a24;color:var(--inf);border:1px solid rgba(96,165,250,.18)}
+        @keyframes ti{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes to{to{opacity:0;transform:translateY(-16px)}}
+        .grp-hdr{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg-card);border:1.5px solid var(--brd);border-radius:var(--rs);margin-bottom:0;cursor:pointer;transition:all .2s;user-select:none}
+        .grp-hdr:active{transform:scale(.98)}
+        .grp-hdr:hover{border-color:var(--acc)}
+        .grp-hdr.expanded{border-radius:var(--rs) var(--rs) 0 0;border-color:var(--acc-m);background:var(--bg-card-h)}
+        .grp-av{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;font-family:'Space Grotesk'}
+        .grp-if{flex:1;min-width:0}
+        .grp-nm{font-family:'Space Grotesk';font-size:14px;font-weight:600}
+        .grp-cnt{font-size:11px;color:var(--fg-m);font-weight:500}
+        .grp-chev{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--fg-m);flex-shrink:0;background:var(--bg-input);transition:transform .25s,color .2s}
+        .grp-hdr.expanded .grp-chev{transform:rotate(180deg);color:var(--acc)}
+        .grp-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+        .grp-body.open{max-height:2000px}
+        .grp-item{background:var(--bg-card);border:1px solid var(--brd);border-top:none;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s}
+        .grp-item:active{background:var(--bg-card-h)}
+        .grp-item:last-child{border-radius:0 0 var(--rs) var(--rs);border-bottom:1px solid var(--brd)}
+        .grp-item:first-child{border-radius:0 0 var(--rs) var(--rs)}
+        .gi-dot{width:8px;height:8px;border-radius:50%;background:var(--acc-m);flex-shrink:0}
+        .gi-if{flex:1;min-width:0}
+        .gi-nm{font-size:13px;font-weight:500}
+        .gi-det{font-size:11px;color:var(--fg-m);margin-top:2px}
+        .gi-qty{font-family:'Space Grotesk';font-size:15px;font-weight:700;color:var(--ok);flex-shrink:0}
+        .reset-box{background:linear-gradient(135deg,rgba(248,113,113,.06),rgba(248,113,113,.02));border:1.5px solid rgba(248,113,113,.15);border-radius:var(--r);padding:18px;margin-bottom:22px}
+        .reset-box-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .reset-box-ic{width:42px;height:42px;border-radius:12px;background:var(--err-d);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--err);flex-shrink:0}
+        .reset-box-if{flex:1}
+        .reset-box-if h4{font-family:'Space Grotesk';font-size:14px;font-weight:600;color:var(--err);margin-bottom:2px}
+        .reset-box-if p{font-size:11px;color:var(--fg-m);line-height:1.5}
+        .reset-box-stats{display:flex;gap:8px;margin-bottom:14px}
+        .reset-stat{flex:1;background:var(--bg-input);border-radius:8px;padding:8px 10px;text-align:center}
+        .reset-stat .rv{font-family:'Space Grotesk';font-size:16px;font-weight:700;color:var(--err)}
+        .reset-stat .rl{font-size:10px;color:var(--fg-m);margin-top:2px}
+        ::-webkit-scrollbar{width:3px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="tw" id="tw"></div>
+
+<div class="app">
+
+    <div class="login-scr" id="loginScr">
+        <div class="login-logo"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="login-t">Stok<span>Ku</span></div>
+        <p class="login-sub">Sistem manajemen stok produk.<br>Pilih cara masuk di bawah ini.</p>
+        <div class="role-cards">
+            <div class="role-card" onclick="showAuth('admin')">
+                <div class="role-ic adm"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="role-info"><h3>Admin</h3><p>Kelola supplier, produk, lihat semua data stok & transaksi</p></div>
+                <i class="fa-solid fa-chevron-right" style="color:var(--fg-m);margin-left:auto;font-size:14px"></i>
+            </div>
+            <div class="role-card" onclick="showAuth('supplier')">
+                <div class="role-ic sup"><i class="fa-solid fa-truck-field"></i></div>
+                <div class="role-info"><h3>Supplier</h3><p>Masuk untuk input stok produk hari ini</p></div>
+                <i class="fa-solid fa-chevron-right" style="color:var(--fg-m);margin-left:auto;font-size:14px"></i>
+            </div>
+        </div>
+        <p style="margin-top:32px;font-size:11px;color:var(--fg-m);opacity:.5">Data tersimpan di perangkat ini (localStorage)</p>
+    </div>
+
+    <div class="auth-scr" id="authScr">
+        <div class="auth-box">
+            <button class="auth-back" onclick="backLogin()"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+            <div id="authAdmin">
+                <div style="text-align:center;margin-bottom:24px">
+                    <div style="width:56px;height:56px;background:var(--acc-d);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;color:var(--acc);margin-bottom:12px"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="auth-t">Masuk sebagai Admin</div>
+                    <div class="auth-d">Masukkan password admin</div>
+                </div>
+                <div class="fg"><label class="fl">Password Admin</label><input type="password" class="fi" id="admPwd" placeholder="Masukkan password" onkeydown="if(event.key==='Enter')doAdmLogin()"></div>
+                <button class="btn btn-p btn-f" onclick="doAdmLogin()"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+                <div class="pin-info" style="margin-top:18px"><i class="fa-solid fa-circle-info"></i><p>Password default: <strong style="font-family:'Space Grotesk';letter-spacing:2px">admin123</strong><br>Bisa diubah di menu Pengaturan setelah masuk.</p></div>
+            </div>
+            <div id="authSup" style="display:none">
+                <div style="text-align:center;margin-bottom:24px">
+                    <div style="width:56px;height:56px;background:var(--ok-d);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;color:var(--ok);margin-bottom:12px"><i class="fa-solid fa-truck-field"></i></div>
+                    <div class="auth-t">Masuk sebagai Supplier</div>
+                    <div class="auth-d">Pilih ID Supplier lalu masukkan PIN</div>
+                </div>
+                <div class="fg">
+                    <label class="fl">ID Supplier</label>
+                    <select class="fs" id="supLogId" onchange="onSupLogIdChange()">
+                        <option value="">-- Pilih ID Supplier --</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label class="fl">PIN (6 digit)</label>
+                    <div class="pin-grp">
+                        <input type="tel" maxlength="1" class="pin-d" id="p1" oninput="pn(this,1)" onkeydown="pb(event,this,1)">
+                        <input type="tel" maxlength="1" class="pin-d" id="p2" oninput="pn(this,2)" onkeydown="pb(event,this,2)">
+                        <input type="tel" maxlength="1" class="pin-d" id="p3" oninput="pn(this,3)" onkeydown="pb(event,this,3)">
+                        <input type="tel" maxlength="1" class="pin-d" id="p4" oninput="pn(this,4)" onkeydown="pb(event,this,4)">
+                        <input type="tel" maxlength="1" class="pin-d" id="p5" oninput="pn(this,5)" onkeydown="pb(event,this,5)">
+                        <input type="tel" maxlength="1" class="pin-d" id="p6" oninput="pn(this,6)" onkeydown="pb(event,this,6)">
+                    </div>
+                </div>
+                <button class="btn btn-p btn-f" onclick="doSupLogin()"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+                <div class="pin-info" style="margin-top:18px"><i class="fa-solid fa-circle-info"></i><p>Pilih ID Supplier Anda dari dropdown di atas, lalu masukkan PIN 6 digit yang diberikan Admin.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-app" id="mainApp">
+        <header class="app-hdr">
+            <div class="hdr-l">
+                <div class="hdr-logo"><i class="fa-solid fa-boxes-stacked" style="font-size:13px"></i></div>
+                <div class="hdr-brand">Stok<span>Ku</span></div>
+            </div>
+            <div class="hdr-r">
+                <div class="hdr-user"><strong id="hName">Admin</strong><span id="hRole">Administrator</span></div>
+                <button class="hdr-btn btn-settings" id="btnSettings" onclick="openM('mSettings')" aria-label="Pengaturan"><i class="fa-solid fa-gear"></i></button>
+                <button class="hdr-btn btn-logout" onclick="doLogout()" aria-label="Keluar"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            </div>
+        </header>
+
+        <div id="admPages">
+            <section class="page on" id="aDash">
+                <div class="stats">
+                    <div class="st ca"><div class="st-i"><i class="fa-solid fa-box"></i></div><div class="st-v" id="aSP">0</div><div class="st-l">Total Produk</div></div>
+                    <div class="st cs"><div class="st-i"><i class="fa-solid fa-truck-field"></i></div><div class="st-v" id="aSS">0</div><div class="st-l">Supplier</div></div>
+                    <div class="st ce"><div class="st-i"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="st-v" id="aST">0</div><div class="st-l">Transaksi</div></div>
+                    <div class="st ci"><div class="st-i"><i class="fa-solid fa-cubes"></i></div><div class="st-v" id="aSK">0</div><div class="st-l">Total Stok</div></div>
+                </div>
+                <div class="sec-t">Transaksi Terakhir <span class="badge" id="aBR">0</span></div>
+                <div id="aRL"><div class="empty"><i class="fa-solid fa-clock-rotate-left"></i><p>Belum ada transaksi.</p></div></div>
+            </section>
+            <section class="page" id="aSup">
+                <div class="srch"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="aSSrch" placeholder="Cari supplier..." oninput="aRSup()"></div>
+                <div class="sec-t">Daftar Supplier <span class="badge" id="aBS">0</span></div>
+                <div class="lw" id="aSL"><div class="empty"><i class="fa-solid fa-truck-field"></i><p>Belum ada supplier.</p></div></div>
+            </section>
+            <section class="page" id="aProd">
+                <div class="sec-t">Input Stok Hari Ini <span class="badge badge-ok" id="aBTI">0</span></div>
+                <div id="aTIList"><div class="empty"><i class="fa-solid fa-inbox"></i><p>Belum ada input stok hari ini.</p></div></div>
+
+                <div class="reset-box" id="resetBox">
+                    <div class="reset-box-top">
+                        <div class="reset-box-ic"><i class="fa-solid fa-rotate-left"></i></div>
+                        <div class="reset-box-if">
+                            <h4>Reset Stok Produk Masal</h4>
+                            <p>Setel semua stok menjadi 0 dan hapus transaksi hari ini. Supplier akan mulai input dari nol.</p>
+                        </div>
+                    </div>
+                    <div class="reset-box-stats">
+                        <div class="reset-stat"><div class="rv" id="rsTotalProd">0</div><div class="rl">Total Produk</div></div>
+                        <div class="reset-stat"><div class="rv" id="rsTotalStok">0</div><div class="rl">Total Stok</div></div>
+                        <div class="reset-stat"><div class="rv" id="rsTodayTrx">0</div><div class="rl">Trx Hari Ini</div></div>
+                    </div>
+                    <button class="btn btn-w btn-f btn-sm" onclick="doResetStock()"><i class="fa-solid fa-rotate-left"></i> Reset Semua Stok ke 0</button>
+                </div>
+
+                <div class="sec-t" style="margin-top:28px">Semua Produk <span class="badge" id="aBP">0</span></div>
+                <div class="srch"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="aPSrch" placeholder="Cari produk..." oninput="aRProd()"></div>
+                <div class="lw" id="aPL"><div class="empty"><i class="fa-solid fa-box"></i><p>Belum ada produk.</p></div></div>
+            </section>
+            <section class="page" id="aHist">
+                <div class="srch"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="aHSrch" placeholder="Cari transaksi..." oninput="aRHist()"></div>
+                <div class="sec-t">Semua Riwayat <span class="badge" id="aBH">0</span></div>
+                <div id="aHL"><div class="empty"><i class="fa-solid fa-receipt"></i><p>Belum ada riwayat.</p></div></div>
+            </section>
+        </div>
+
+        <div id="supPages" style="display:none">
+            <section class="page on" id="sHome">
+                <div class="today-b">
+                    <div class="today-ic"><i class="fa-solid fa-calendar-day"></i></div>
+                    <div class="today-if"><div class="day" id="sDN">Senin</div><div class="date" id="sDS">1 Januari 2025</div></div>
+                    <div class="today-tm" id="sTN">00:00</div>
+                </div>
+                <div class="qi" id="sInputArea">
+                    <div class="qi-t"><i class="fa-solid fa-bolt"></i> Input Stok Hari Ini</div>
+                    <div class="info-box" id="sNoProdInfo" style="display:none">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <p>Belum ada produk yang terdaftar untuk Anda. Hubungi Admin untuk menambahkan produk terlebih dahulu.</p>
+                    </div>
+                    <div id="sFormWrap" style="display:none">
+                        <div class="fg">
+                            <label class="fl">Pilih Produk</label>
+                            <select class="fs" id="sIProd" onchange="sOnProdChange()">
+                                <option value="">-- Pilih Produk --</option>
+                            </select>
+                        </div>
+                        <div class="fg" id="sKatWrap" style="display:none">
+                            <label class="fl">Kategori</label>
+                            <input type="text" class="fi" id="sIKat" readonly>
+                        </div>
+                        <div class="fg" id="sHrgWrap" style="display:none">
+                            <label class="fl">Harga Beli (Rp)</label>
+                            <input type="number" class="fi" id="sIHr" readonly>
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Jumlah Stok</label>
+                            <input type="number" class="fi" id="sIJm" placeholder="0" min="1">
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Catatan (opsional)</label>
+                            <input type="text" class="fi" id="sICt" placeholder="No PO, keterangan dll">
+                        </div>
+                        <button class="btn btn-p btn-f" onclick="sSubmit()"><i class="fa-solid fa-paper-plane"></i> Kirim Stok Hari Ini</button>
+                    </div>
+                </div>
+                <div class="sec-t">Daftar Produk Saya <span class="badge" id="sBP">0</span></div>
+                <div class="lw" id="sPL"><div class="empty"><i class="fa-solid fa-box-open"></i><p>Belum ada produk dengan stok.<br>Gunakan form di atas untuk mulai input stok.</p></div></div>
+            </section>
+            <section class="page" id="sHist">
+                <div class="sec-t">Riwayat Input Saya <span class="badge" id="sBH">0</span></div>
+                <div id="sHL"><div class="empty"><i class="fa-solid fa-receipt"></i><p>Belum ada riwayat input.</p></div></div>
+            </section>
+        </div>
+
+        <nav class="bnav" id="admNav">
+            <button class="bn on" onclick="aNav('aDash',this)"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></button>
+            <button class="bn" onclick="aNav('aSup',this)"><i class="fa-solid fa-truck-field"></i><span>Supplier</span></button>
+            <button class="bn" onclick="aNav('aProd',this)"><i class="fa-solid fa-box"></i><span>Produk</span></button>
+            <button class="bn" onclick="aNav('aHist',this)"><i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat</span></button>
+        </nav>
+        <nav class="bnav" id="supNav" style="display:none">
+            <button class="bn on" onclick="sNav('sHome',this)"><i class="fa-solid fa-bolt"></i><span>Input Stok</span></button>
+            <button class="bn" onclick="sNav('sHist',this)"><i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat</span></button>
+        </nav>
+        <button class="fab hide" id="fab" onclick="fabAct()"><i class="fa-solid fa-plus"></i></button>
+    </div>
+</div>
+
+<div class="mbg" id="mSettings">
+    <div class="ms" style="max-height:auto">
+        <div class="mh"></div>
+        <div class="mt">Pengaturan</div>
+        <div id="settingsContent"></div>
+        <button class="btn btn-o btn-f" style="margin-top:18px" onclick="closeM('mSettings')">Tutup</button>
+    </div>
+</div>
+
+<div class="mbg" id="mPwd">
+    <div class="ms" style="max-height:auto">
+        <div class="mh"></div>
+        <div class="mt">Ubah Password Admin</div>
+        <div class="fg"><label class="fl">Password Lama</label><input type="password" class="fi" id="pwO" placeholder="Password saat ini"></div>
+        <div class="fg"><label class="fl">Password Baru</label><input type="password" class="fi" id="pwN" placeholder="Minimal 6 karakter"></div>
+        <div class="fg"><label class="fl">Konfirmasi Password Baru</label><input type="password" class="fi" id="pwC" placeholder="Ulangi password baru"></div>
+        <button class="btn btn-p btn-f" onclick="doChgPwd()"><i class="fa-solid fa-key"></i> Simpan Password</button>
+        <button class="btn btn-o btn-f" style="margin-top:10px" onclick="closeM('mPwd')">Batal</button>
+    </div>
+</div>
+
+<div class="mbg" id="mSupF">
+    <div class="ms">
+        <div class="mh"></div>
+        <div class="mt" id="mSupFT">Tambah Supplier</div>
+        <input type="hidden" id="mSupEid">
+        <div class="fg"><label class="fl">ID Supplier</label><input type="text" class="fi" id="mSupId" placeholder="SPL001" style="text-transform:uppercase"></div>
+        <div class="fg"><label class="fl">Nama Supplier</label><input type="text" class="fi" id="mSupNm" placeholder="Nama perusahaan / kontak"></div>
+        <div class="fg"><label class="fl">Alamat</label><input type="text" class="fi" id="mSupAl" placeholder="Alamat lengkap"></div>
+        <div class="fg"><label class="fl">Nomor HP</label><input type="tel" class="fi" id="mSupHp" placeholder="08xxxxxxxxxx"></div>
+        <div class="fg"><label class="fl">PIN Login (6 digit angka)</label><input type="text" class="fi" id="mSupPn" placeholder="123456" maxlength="6" style="font-family:'Space Grotesk';letter-spacing:4px;font-size:18px;text-align:center"></div>
+        <button class="btn btn-p btn-f" onclick="saveSup()"><i class="fa-solid fa-check"></i> Simpan Supplier</button>
+        <button class="btn btn-o btn-f" style="margin-top:10px" onclick="closeM('mSupF')">Batal</button>
+    </div>
+</div>
+
+<div class="mbg" id="mSupD">
+    <div class="ms">
+        <div class="mh"></div>
+        <div class="mt" id="mSupDT">Detail Supplier</div>
+        <div id="mSupDC"></div>
+        <button class="btn btn-o btn-sm btn-f" style="margin-top:18px" onclick="closeM('mSupD')">Tutup</button>
+    </div>
+</div>
+
+<div class="mbg" id="mProdF">
+    <div class="ms">
+        <div class="mh"></div>
+        <div class="mt">Tambah Produk</div>
+        <div class="fg"><label class="fl">Nama Produk</label><input type="text" class="fi" id="mPrNm" placeholder="Nama produk"></div>
+        <div class="fg"><label class="fl">Kategori</label><input type="text" class="fi" id="mPrKt" placeholder="Contoh: Elektronik, Makanan"></div>
+        <div class="fg"><label class="fl">Supplier</label><select class="fs" id="mPrSup"><option value="">-- Pilih Supplier --</option></select></div>
+        <div class="fg"><label class="fl">Stok Awal (opsional)</label><input type="number" class="fi" id="mPrJm" placeholder="0" min="0" value="0"></div>
+        <div class="fg"><label class="fl">Harga Beli (Rp)</label><input type="number" class="fi" id="mPrHr" placeholder="0" min="0"></div>
+        <button class="btn btn-p btn-f" onclick="saveProd()"><i class="fa-solid fa-check"></i> Simpan Produk</button>
+        <button class="btn btn-o btn-f" style="margin-top:10px" onclick="closeM('mProdF')">Batal</button>
+    </div>
+</div>
+
+<div class="mbg" id="mProdD">
+    <div class="ms">
+        <div class="mh"></div>
+        <div class="mt" id="mPrDT">Detail Produk</div>
+        <div id="mPrDC"></div>
+        <button class="btn btn-o btn-sm btn-f" style="margin-top:18px" onclick="closeM('mProdD')">Tutup</button>
+    </div>
+</div>
+
+<div class="mbg" id="mConf">
+    <div class="ms" style="max-height:auto">
+        <div class="mh"></div>
+        <div class="mt" id="mConfTitle">Konfirmasi</div>
+        <p style="font-size:13px;color:var(--fg-m);line-height:1.6" id="mConfT"></p>
+        <div id="mConfExtra"></div>
+        <div class="cr">
+            <button class="btn btn-o" onclick="closeM('mConf')">Batal</button>
+            <button class="btn btn-d" id="mConfB" onclick="">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var K = { s: 'sk_sup', p: 'sk_prod', t: 'sk_trx', w: 'sk_pwd' };
+
+function gd(k) {
+    try { return JSON.parse(localStorage.getItem(k)) || []; }
+    catch (e) { return []; }
+}
+
+function sd(k, v) {
+    localStorage.setItem(k, JSON.stringify(v));
+}
+
+function gwd() {
+    return localStorage.getItem(K.w) || 'admin123';
+}
+
+function swd(p) {
+    localStorage.setItem(K.w, p);
+}
+
+function gid() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function esc(s) {
+    if (!s) return '';
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+function fRp(n) {
+    return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+}
+
+function fD(d) {
+    if (!d) return '-';
+    var t = new Date(d + 'T00:00:00');
+    var m = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    return t.getDate() + ' ' + m[t.getMonth()] + ' ' + t.getFullYear();
+}
+
+function fDateFull(d) {
+    if (!d) return '-';
+    var t = new Date(d + 'T00:00:00');
+    var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    return days[t.getDay()] + ', ' + t.getDate() + ' ' + months[t.getMonth()] + ' ' + t.getFullYear();
+}
+
+function td() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function sCol(s) {
+    var c = ['#E8A838', '#34D399', '#F87171', '#60A5FA', '#A78BFA', '#FB923C', '#F472B6', '#2DD4BF'];
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h);
+    return c[Math.abs(h) % c.length];
+}
+
+function ini(n) {
+    return n.split(' ').map(function (w) { return w[0]; }).join('').substring(0, 2).toUpperCase();
+}
+
+function gSid() {
+    var s = gd(K.s);
+    return 'SPL' + String(s.length + 1).padStart(3, '0');
+}
+
+function toast(m, t) {
+    t = t || 'success';
+    var w = document.getElementById('tw');
+    var e = document.createElement('div');
+    e.className = 'toast ' + t;
+    var ic = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+    e.innerHTML = '<i class="fa-solid ' + (ic[t] || ic.info) + '"></i> ' + m;
+    w.appendChild(e);
+    setTimeout(function () { if (e.parentNode) e.remove(); }, 3200);
+}
+
+function openM(id) {
+    if (id === 'mSettings') renderSettings();
+    document.getElementById(id).classList.add('on');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeM(id) {
+    document.getElementById(id).classList.remove('on');
+    document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.mbg').forEach(function (m) {
+    m.addEventListener('click', function (e) {
+        if (e.target === this) {
+            this.classList.remove('on');
+            document.body.style.overflow = '';
+        }
+    });
+});
+
+var cRole = null;
+var cSid = null;
+
+function showAuth(r) {
+    document.getElementById('loginScr').style.display = 'none';
+    document.getElementById('authScr').classList.add('on');
+    document.getElementById('authAdmin').style.display = r === 'admin' ? 'block' : 'none';
+    document.getElementById('authSup').style.display = r === 'supplier' ? 'block' : 'none';
+    cRole = r;
+    if (r === 'admin') {
+        setTimeout(function () { document.getElementById('admPwd').focus(); }, 300);
+    } else {
+        populateSupLoginDropdown();
+        for (var i = 1; i <= 6; i++) document.getElementById('p' + i).value = '';
+    }
+}
+
+function populateSupLoginDropdown() {
+    var sups = gd(K.s);
+    var sel = document.getElementById('supLogId');
+    sel.innerHTML = '<option value="">-- Pilih ID Supplier --</option>';
+    for (var i = 0; i < sups.length; i++) {
+        var s = sups[i];
+        sel.innerHTML += '<option value="' + s.id + '">' + esc(s.sid) + ' — ' + esc(s.nama) + '</option>';
+    }
+}
+
+function onSupLogIdChange() {
+    var val = document.getElementById('supLogId').value;
+    if (val) {
+        document.getElementById('p1').focus();
+    }
+}
+
+function backLogin() {
+    document.getElementById('authScr').classList.remove('on');
+    document.getElementById('loginScr').style.display = 'flex';
+    document.getElementById('admPwd').value = '';
+    document.getElementById('supLogId').value = '';
+    for (var i = 1; i <= 6; i++) document.getElementById('p' + i).value = '';
+}
+
+function pn(el, i) {
+    el.value = el.value.replace(/\D/g, '');
+    if (el.value && i < 6) document.getElementById('p' + (i + 1)).focus();
+}
+
+function pb(e, el, i) {
+    if (e.key === 'Backspace' && !el.value && i > 1) document.getElementById('p' + (i - 1)).focus();
+}
+
+function doAdmLogin() {
+    if (document.getElementById('admPwd').value !== gwd()) { toast('Password salah!', 'error'); return; }
+    enter('admin');
+}
+
+function doSupLogin() {
+    var selectedId = document.getElementById('supLogId').value;
+    var pin = '';
+    for (var i = 1; i <= 6; i++) pin += document.getElementById('p' + i).value;
+    if (!selectedId) { toast('Pilih ID Supplier terlebih dahulu!', 'error'); return; }
+    if (pin.length !== 6) { toast('PIN harus 6 digit!', 'error'); return; }
+    var s = gd(K.s).find(function (x) { return x.id === selectedId; });
+    if (!s) { toast('Supplier tidak ditemukan!', 'error'); return; }
+    if (s.pin !== pin) { toast('PIN salah! Hubungi admin.', 'error'); return; }
+    cSid = s.id;
+    enter('supplier', s);
+}
+
+function enter(role, sup) {
+    document.getElementById('loginScr').style.display = 'none';
+    document.getElementById('authScr').classList.remove('on');
+    document.getElementById('mainApp').classList.add('on');
+    if (role === 'admin') {
+        document.getElementById('admPages').style.display = 'block';
+        document.getElementById('supPages').style.display = 'none';
+        document.getElementById('admNav').style.display = 'flex';
+        document.getElementById('supNav').style.display = 'none';
+        document.getElementById('hName').textContent = 'Admin';
+        document.getElementById('hRole').textContent = 'Administrator';
+        document.getElementById('btnSettings').style.display = 'flex';
+        aCur = 'aDash';
+        aRefresh();
+    } else {
+        document.getElementById('admPages').style.display = 'none';
+        document.getElementById('supPages').style.display = 'block';
+        document.getElementById('admNav').style.display = 'none';
+        document.getElementById('supNav').style.display = 'flex';
+        document.getElementById('hName').textContent = sup.nama;
+        document.getElementById('hRole').textContent = sup.sid;
+        document.getElementById('btnSettings').style.display = 'none';
+        document.getElementById('fab').classList.add('hide');
+        sRefresh();
+        startClk();
+    }
+}
+
+function doLogout() {
+    document.getElementById('mainApp').classList.remove('on');
+    document.getElementById('loginScr').style.display = 'flex';
+    cRole = null;
+    cSid = null;
+    backLogin();
+    if (clkI) clearInterval(clkI);
+}
+
+function renderSettings() {
+    var c = document.getElementById('settingsContent');
+    c.innerHTML =
+        '<div class="set-item" onclick="closeM(\'mSettings\');setTimeout(function(){document.getElementById(\'pwO\').value=\'\';document.getElementById(\'pwN\').value=\'\';document.getElementById(\'pwC\').value=\'\';openM(\'mPwd\')},200)">' +
+        '<div class="set-ic" style="background:var(--acc-d);color:var(--acc)"><i class="fa-solid fa-key"></i></div>' +
+        '<div class="set-if"><h4>Ubah Password Admin</h4><p>Ganti password untuk login admin</p></div>' +
+        '<i class="fa-solid fa-chevron-right set-arr"></i></div>' +
+        '<div class="set-item" onclick="expData()">' +
+        '<div class="set-ic" style="background:var(--ok-d);color:var(--ok)"><i class="fa-solid fa-file-export"></i></div>' +
+        '<div class="set-if"><h4>Ekspor Data</h4><p>Download semua data sebagai file JSON</p></div>' +
+        '<i class="fa-solid fa-chevron-right set-arr"></i></div>' +
+        '<div class="set-item" onclick="impData()">' +
+        '<div class="set-ic" style="background:var(--inf-d);color:var(--inf)"><i class="fa-solid fa-file-import"></i></div>' +
+        '<div class="set-if"><h4>Impor Data</h4><p>Restore data dari file JSON</p></div>' +
+        '<i class="fa-solid fa-chevron-right set-arr"></i></div>' +
+        '<div class="set-item" onclick="clearAll()">' +
+        '<div class="set-ic" style="background:var(--err-d);color:var(--err)"><i class="fa-solid fa-trash-can"></i></div>' +
+        '<div class="set-if"><h4>Hapus Semua Data</h4><p>Bersihkan seluruh data stok, supplier, dan transaksi</p></div>' +
+        '<i class="fa-solid fa-chevron-right set-arr"></i></div>';
+}
+
+function doChgPwd() {
+    var o = document.getElementById('pwO').value;
+    var n = document.getElementById('pwN').value;
+    var c = document.getElementById('pwC').value;
+    if (o !== gwd()) { toast('Password lama salah!', 'error'); return; }
+    if (n.length < 6) { toast('Password baru minimal 6 karakter!', 'error'); return; }
+    if (n !== c) { toast('Konfirmasi password tidak cocok!', 'error'); return; }
+    swd(n);
+    closeM('mPwd');
+    toast('Password berhasil diubah.', 'success');
+}
+
+function expData() {
+    var data = { suppliers: gd(K.s), products: gd(K.p), transactions: gd(K.t), exportedAt: new Date().toISOString() };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'stokku_backup_' + td() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Data berhasil diekspor.', 'success');
+}
+
+function impData() {
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.json';
+    inp.onchange = function (e) {
+        var f = e.target.files[0];
+        if (!f) return;
+        var r = new FileReader();
+        r.onload = function (ev) {
+            try {
+                var d = JSON.parse(ev.target.result);
+                if (d.suppliers) sd(K.s, d.suppliers);
+                if (d.products) sd(K.p, d.products);
+                if (d.transactions) sd(K.t, d.transactions);
+                closeM('mSettings');
+                aRefresh();
+                toast('Data berhasil diimpor.', 'success');
+            } catch (err) {
+                toast('File tidak valid!', 'error');
+            }
+        };
+        r.readAsText(f);
+    };
+    inp.click();
+}
+
+function clearAll() {
+    document.getElementById('mConfTitle').textContent = 'Konfirmasi';
+    document.getElementById('mConfT').textContent = 'Hapus SEMUA data (supplier, produk, transaksi)? Tindakan ini tidak bisa dibatalkan!';
+    document.getElementById('mConfExtra').innerHTML = '';
+    document.getElementById('mConfB').textContent = 'Hapus Semua';
+    document.getElementById('mConfB').className = 'btn btn-d';
+    document.getElementById('mConfB').onclick = function () {
+        sd(K.s, []);
+        sd(K.p, []);
+        sd(K.t, []);
+        closeM('mConf');
+        closeM('mSettings');
+        aRefresh();
+        toast('Semua data telah dihapus.', 'success');
+    };
+    openM('mConf');
+}
+
+var aCur = 'aDash';
+
+function aNav(pid, el) {
+    var pages = document.querySelectorAll('#admPages .page');
+    for (var i = 0; i < pages.length; i++) pages[i].classList.remove('on');
+    document.getElementById(pid).classList.add('on');
+    var navs = document.querySelectorAll('#admNav .bn');
+    for (var j = 0; j < navs.length; j++) navs[j].classList.remove('on');
+    if (el) el.classList.add('on');
+    aCur = pid;
+    var fab = document.getElementById('fab');
+    if (pid === 'aSup' || pid === 'aProd') {
+        fab.classList.remove('hide');
+    } else {
+        fab.classList.add('hide');
+    }
+    if (pid === 'aDash') aRefresh();
+    if (pid === 'aSup') aRSup();
+    if (pid === 'aProd') aRProd();
+    if (pid === 'aHist') aRHist();
+}
+
+function fabAct() {
+    if (aCur === 'aSup') {
+        document.getElementById('mSupFT').textContent = 'Tambah Supplier';
+        document.getElementById('mSupEid').value = '';
+        document.getElementById('mSupId').value = gSid();
+        document.getElementById('mSupNm').value = '';
+        document.getElementById('mSupAl').value = '';
+        document.getElementById('mSupHp').value = '';
+        document.getElementById('mSupPn').value = '';
+        openM('mSupF');
+    } else if (aCur === 'aProd') {
+        var sups = gd(K.s);
+        if (!sups.length) { toast('Tambahkan supplier terlebih dahulu.', 'error'); return; }
+        document.getElementById('mPrNm').value = '';
+        document.getElementById('mPrKt').value = '';
+        var sel = document.getElementById('mPrSup');
+        sel.innerHTML = '<option value="">-- Pilih Supplier --</option>';
+        for (var i = 0; i < sups.length; i++) {
+            sel.innerHTML += '<option value="' + sups[i].id + '">' + esc(sups[i].sid) + ' - ' + esc(sups[i].nama) + '</option>';
+        }
+        document.getElementById('mPrJm').value = '0';
+        document.getElementById('mPrHr').value = '';
+        openM('mProdF');
+    }
+}
+
+function aRefresh() {
+    var pr = gd(K.p);
+    var su = gd(K.s);
+    var tr = gd(K.t);
+    var ts = 0;
+    for (var i = 0; i < pr.length; i++) ts += pr[i].stok;
+    an('aSP', pr.length);
+    an('aSS', su.length);
+    an('aST', tr.length);
+    an('aSK', ts);
+    document.getElementById('aBR').textContent = tr.length;
+    var rec = tr.slice().sort(function (a, b) {
+        var d = b.tanggal.localeCompare(a.tanggal);
+        if (d !== 0) return d;
+        return (b.ct || '').localeCompare(a.ct || '');
+    }).slice(0, 5);
+    var c = document.getElementById('aRL');
+    if (!rec.length) {
+        c.innerHTML = '<div class="empty"><i class="fa-solid fa-clock-rotate-left"></i><p>Belum ada transaksi.</p></div>';
+        return;
+    }
+    var html = '';
+    for (var j = 0; j < rec.length; j++) html += hiH(rec[j]);
+    c.innerHTML = html;
+}
+
+function an(id, end) {
+    var el = document.getElementById(id);
+    var st = parseInt(el.textContent) || 0;
+    if (st === end) return;
+    var dur = 400;
+    var t0 = performance.now();
+    function u(now) {
+        var p = Math.min((now - t0) / dur, 1);
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(st + (end - st) * e);
+        if (p < 1) requestAnimationFrame(u);
+    }
+    requestAnimationFrame(u);
+}
+
+function hiH(t) {
+    return '<div class="hi">' +
+        '<div class="hi-top">' +
+        '<span class="hi-date"><i class="fa-regular fa-calendar" style="margin-right:3px"></i>' + fD(t.tanggal) + '</span>' +
+        '<span class="hi-badge">' + esc(t.sNm) + '</span>' +
+        '</div>' +
+        '<div class="hi-name">' + esc(t.pNm) + '</div>' +
+        '<div class="hi-det">' +
+        '<span style="color:var(--ok);font-weight:700">+' + t.jumlah + '</span> stok' +
+        (t.harga ? ' &middot; ' + fRp(t.harga) : '') +
+        (t.kategori ? ' &middot; ' + esc(t.kategori) : '') +
+        (t.catatan ? '<br>' + esc(t.catatan) : '') +
+        '</div></div>';
+}
+
+function saveSup() {
+    var eid = document.getElementById('mSupEid').value;
+    var sid = document.getElementById('mSupId').value.trim().toUpperCase();
+    var nm = document.getElementById('mSupNm').value.trim();
+    var al = document.getElementById('mSupAl').value.trim();
+    var hp = document.getElementById('mSupHp').value.trim();
+    var pn = document.getElementById('mSupPn').value.trim();
+    if (!sid || !nm) { toast('ID dan Nama wajib diisi!', 'error'); return; }
+    if (!eid && (!pn || pn.length !== 6 || !/^\d{6}$/.test(pn))) { toast('PIN harus 6 digit angka!', 'error'); return; }
+    var ss = gd(K.s);
+    if (eid) {
+        var idx = -1;
+        for (var i = 0; i < ss.length; i++) { if (ss[i].id === eid) { idx = i; break; } }
+        if (idx === -1) return;
+        for (var j = 0; j < ss.length; j++) {
+            if (ss[j].sid === sid && ss[j].id !== eid) { toast('ID sudah dipakai!', 'error'); return; }
+        }
+        ss[idx].sid = sid;
+        ss[idx].nama = nm;
+        ss[idx].alamat = al;
+        ss[idx].hp = hp;
+        if (pn && /^\d{6}$/.test(pn)) ss[idx].pin = pn;
+        toast('Supplier diperbarui.', 'success');
+    } else {
+        for (var k = 0; k < ss.length; k++) {
+            if (ss[k].sid === sid) { toast('ID sudah ada!', 'error'); return; }
+        }
+        ss.push({ id: gid(), sid: sid, nama: nm, alamat: al, hp: hp, pin: pn, ca: td() });
+        toast('Supplier ditambahkan.', 'success');
+    }
+    sd(K.s, ss);
+    closeM('mSupF');
+    aRSup();
+    aRefresh();
+}
+
+function aRSup() {
+    var c = document.getElementById('aSL');
+    var q = (document.getElementById('aSSrch').value || '').toLowerCase();
+    var ss = gd(K.s);
+    if (q) {
+        ss = ss.filter(function (s) {
+            return s.nama.toLowerCase().indexOf(q) !== -1 || s.sid.toLowerCase().indexOf(q) !== -1;
+        });
+    }
+    document.getElementById('aBS').textContent = ss.length;
+    if (!ss.length) {
+        c.innerHTML = '<div class="empty"><i class="fa-solid fa-truck-field"></i><p>' + (q ? 'Tidak ditemukan.' : 'Belum ada supplier.') + '</p></div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < ss.length; i++) {
+        var s = ss[i];
+        var cl = sCol(s.nama);
+        html += '<div class="li" onclick="aSupDet(\'' + s.id + '\')">' +
+            '<div class="li-av" style="background:' + cl + '20;color:' + cl + '">' + ini(s.nama) + '</div>' +
+            '<div class="li-if"><div class="li-n">' + esc(s.nama) + '</div>' +
+            '<div class="li-s">' + esc(s.sid) + ' &middot; PIN: <span class="pin-disp">' + esc(s.pin) + '</span></div></div>' +
+            '<i class="fa-solid fa-chevron-right" style="color:var(--fg-m);font-size:12px"></i></div>';
+    }
+    c.innerHTML = html;
+}
+
+function aSupDet(id) {
+    var ss = gd(K.s);
+    var s = null;
+    for (var i = 0; i < ss.length; i++) { if (ss[i].id === id) { s = ss[i]; break; } }
+    if (!s) return;
+    var allTr = gd(K.t);
+    var allPr = gd(K.p);
+    var tr = allTr.filter(function (t) { return t.sId === id; });
+    var pr = allPr.filter(function (p) { return p.sId === id; });
+    var ts = 0;
+    for (var i = 0; i < pr.length; i++) ts += pr[i].stok;
+    document.getElementById('mSupDT').textContent = 'Detail Supplier';
+    document.getElementById('mSupDC').innerHTML =
+        '<div class="dr"><span class="dl">ID Supplier</span><span class="dv">' + esc(s.sid) + '</span></div>' +
+        '<div class="dr"><span class="dl">Nama</span><span class="dv">' + esc(s.nama) + '</span></div>' +
+        '<div class="dr"><span class="dl">Alamat</span><span class="dv">' + esc(s.alamat || '-') + '</span></div>' +
+        '<div class="dr"><span class="dl">Nomor HP</span><span class="dv">' + esc(s.hp || '-') + '</span></div>' +
+        '<div class="dr"><span class="dl">PIN Login</span><span class="dv pin-disp">' + esc(s.pin) + '</span></div>' +
+        '<div class="dr"><span class="dl">Terdaftar</span><span class="dv">' + fD(s.ca) + '</span></div>' +
+        '<div class="dr"><span class="dl">Jumlah Produk</span><span class="dv">' + pr.length + '</span></div>' +
+        '<div class="dr"><span class="dl">Total Stok</span><span class="dv">' + ts + '</span></div>' +
+        '<div class="dr"><span class="dl">Total Transaksi</span><span class="dv">' + tr.length + '</span></div>' +
+        '<div style="display:flex;gap:10px;margin-top:18px">' +
+        '<button class="btn btn-p btn-sm" style="flex:1" onclick="aEditSup(\'' + s.id + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+        '<button class="btn btn-d btn-sm" style="flex:1" onclick="aDelSup(\'' + s.id + '\')"><i class="fa-solid fa-trash"></i> Hapus</button>' +
+        '</div>';
+    openM('mSupD');
+}
+
+function aEditSup(id) {
+    var ss = gd(K.s);
+    var s = null;
+    for (var i = 0; i < ss.length; i++) { if (ss[i].id === id) { s = ss[i]; break; } }
+    if (!s) return;
+    closeM('mSupD');
+    document.getElementById('mSupFT').textContent = 'Edit Supplier';
+    document.getElementById('mSupEid').value = s.id;
+    document.getElementById('mSupId').value = s.sid;
+    document.getElementById('mSupNm').value = s.nama;
+    document.getElementById('mSupAl').value = s.alamat || '';
+    document.getElementById('mSupHp').value = s.hp || '';
+    document.getElementById('mSupPn').value = s.pin || '';
+    setTimeout(function () { openM('mSupF'); }, 200);
+}
+
+function aDelSup(id) {
+    var ss = gd(K.s);
+    var s = null;
+    for (var i = 0; i < ss.length; i++) { if (ss[i].id === id) { s = ss[i]; break; } }
+    if (!s) return;
+    document.getElementById('mConfTitle').textContent = 'Konfirmasi';
+    document.getElementById('mConfT').textContent = 'Hapus supplier "' + s.nama + '"? Semua data produk & transaksinya juga akan dihapus.';
+    document.getElementById('mConfExtra').innerHTML = '';
+    document.getElementById('mConfB').textContent = 'Hapus';
+    document.getElementById('mConfB').className = 'btn btn-d';
+    document.getElementById('mConfB').onclick = function () {
+        sd(K.s, gd(K.s).filter(function (x) { return x.id !== id; }));
+        sd(K.p, gd(K.p).filter(function (x) { return x.sId !== id; }));
+        sd(K.t, gd(K.t).filter(function (x) { return x.sId !== id; }));
+        closeM('mConf');
+        closeM('mSupD');
+        aRSup();
+        aRefresh();
+        toast('Supplier dihapus.', 'success');
+    };
+    openM('mConf');
+}
+
+function saveProd() {
+    var nm = document.getElementById('mPrNm').value.trim();
+    var kt = document.getElementById('mPrKt').value.trim();
+    var sId = document.getElementById('mPrSup').value;
+    var jm = parseInt(document.getElementById('mPrJm').value) || 0;
+    var hr = parseInt(document.getElementById('mPrHr').value) || 0;
+    if (!nm) { toast('Nama produk wajib diisi!', 'error'); return; }
+    if (!sId) { toast('Pilih supplier!', 'error'); return; }
+    var sup = gd(K.s).find(function (s) { return s.id === sId; });
+    if (!sup) { toast('Supplier tidak ditemukan!', 'error'); return; }
+    var prods = gd(K.p);
+    var trxs = gd(K.t);
+    var tgl = td();
+    var exIdx = -1;
+    for (var i = 0; i < prods.length; i++) {
+        if (prods[i].nama.toLowerCase() === nm.toLowerCase() && prods[i].sId === sId) {
+            exIdx = i;
+            break;
+        }
+    }
+    if (exIdx !== -1) {
+        prods[exIdx].stok += jm;
+        if (hr) prods[exIdx].hrgTerakhir = hr;
+        prods[exIdx].ua = tgl;
+        if (jm > 0) {
+            trxs.push({
+                id: gid(), tanggal: tgl, sId: sId, sNm: sup.nama,
+                pId: prods[exIdx].id, pNm: nm, kategori: kt || prods[exIdx].kategori,
+                jumlah: jm, harga: hr, catatan: 'Stok awal oleh Admin', ct: new Date().toISOString()
+            });
+        }
+        toast('Produk "' + nm + '" sudah ada. Stok ditambah: ' + jm, 'success');
+    } else {
+        var pId = gid();
+        prods.push({
+            id: pId, nama: nm, kategori: kt, sId: sId, sNm: sup.nama,
+            stok: jm, hrgTerakhir: hr, ca: tgl, ua: tgl
+        });
+        if (jm > 0) {
+            trxs.push({
+                id: gid(), tanggal: tgl, sId: sId, sNm: sup.nama,
+                pId: pId, pNm: nm, kategori: kt,
+                jumlah: jm, harga: hr, catatan: 'Stok awal oleh Admin', ct: new Date().toISOString()
+            });
+        }
+        toast('Produk "' + nm + '" berhasil ditambahkan!', 'success');
+    }
+    sd(K.p, prods);
+    sd(K.t, trxs);
+    closeM('mProdF');
+    aRProd();
+    aRefresh();
+}
+
+// =============================================
+// RESET STOK PRODUK MASAL
+// =============================================
+function doResetStock() {
+    var prods = gd(K.p);
+    var todayStr = td();
+    var allTrx = gd(K.t);
+    var todayTrx = allTrx.filter(function (t) { return t.tanggal === todayStr; });
+
+    var totalStok = 0;
+    for (var i = 0; i < prods.length; i++) totalStok += prods[i].stok;
+
+    if (prods.length === 0) {
+        toast('Tidak ada produk untuk direset.', 'info');
+        return;
+    }
+
+    if (totalStok === 0 && todayTrx.length === 0) {
+        toast('Semua stok sudah 0 dan tidak ada transaksi hari ini.', 'info');
+        return;
+    }
+
+    // Siapkan info detail untuk konfirmasi
+    var supMap = {};
+    for (var j = 0; j < prods.length; j++) {
+        var p = prods[j];
+        if (p.stok > 0) {
+            if (!supMap[p.sNm]) supMap[p.sNm] = { count: 0, stok: 0 };
+            supMap[p.sNm].count++;
+            supMap[p.sNm].stok += p.stok;
+        }
+    }
+    var supNames = Object.keys(supMap).sort();
+    var detailHtml = '';
+    if (supNames.length > 0) {
+        detailHtml = '<div style="margin-top:14px;margin-bottom:4px;font-size:11px;color:var(--fg-m);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Rincian per Supplier:</div>';
+        for (var k = 0; k < supNames.length; k++) {
+            var sn = supNames[k];
+            detailHtml += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--brd);font-size:12px">' +
+                '<span>' + esc(sn) + ' <span style="color:var(--fg-m)">(' + supMap[sn].count + ' produk)</span></span>' +
+                '<span style="color:var(--err);font-weight:700;font-family:Space Grotesk">' + supMap[sn].stok + '</span></div>';
+        }
+    }
+    if (todayTrx.length > 0) {
+        detailHtml += '<div style="margin-top:8px;font-size:11px;color:#FB923C"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i> ' + todayTrx.length + ' transaksi hari ini (' + fDateFull(todayStr) + ') juga akan dihapus.</div>';
+    }
+
+    document.getElementById('mConfTitle').textContent = 'Reset Stok Masal';
+    document.getElementById('mConfT').textContent = 'Setel SEMUA stok produk menjadi 0 dan hapus transaksi hari ini? Semua supplier akan mulai input dari nol.';
+    document.getElementById('mConfExtra').innerHTML = detailHtml;
+    document.getElementById('mConfB').textContent = 'Reset Stok';
+    document.getElementById('mConfB').className = 'btn btn-d';
+    document.getElementById('mConfB').onclick = function () {
+        // Reset semua stok produk menjadi 0
+        var updatedProds = gd(K.p);
+        for (var x = 0; x < updatedProds.length; x++) {
+            updatedProds[x].stok = 0;
+        }
+        sd(K.p, updatedProds);
+
+        // Hapus transaksi hari ini
+        var todayS = td();
+        var remainingTrx = gd(K.t).filter(function (t) { return t.tanggal !== todayS; });
+        sd(K.t, remainingTrx);
+
+        closeM('mConf');
+        aRProd();
+        aRefresh();
+        toast('Semua stok berhasil direset ke 0. Transaksi hari ini dihapus.', 'success');
+    };
+    openM('mConf');
+}
+
+function updateResetBoxStats() {
+    var prods = gd(K.p);
+    var todayStr = td();
+    var allTrx = gd(K.t);
+    var todayTrx = allTrx.filter(function (t) { return t.tanggal === todayStr; });
+
+    var totalStok = 0;
+    for (var i = 0; i < prods.length; i++) totalStok += prods[i].stok;
+
+    document.getElementById('rsTotalProd').textContent = prods.length;
+    document.getElementById('rsTotalStok').textContent = totalStok;
+    document.getElementById('rsTodayTrx').textContent = todayTrx.length;
+}
+
+// =============================================
+// Accordion menggunakan index numerik
+// =============================================
+function toggleGroup(idx) {
+    var body = document.getElementById('grp-body-' + idx);
+    var hdr = document.getElementById('grp-hdr-' + idx);
+    if (!body || !hdr) return;
+    if (body.classList.contains('open')) {
+        body.classList.remove('open');
+        hdr.classList.remove('expanded');
+    } else {
+        body.classList.add('open');
+        hdr.classList.add('expanded');
+    }
+}
+
+function aRProd() {
+    var todayStr = td();
+    var allTr = gd(K.t);
+    var todayTr = allTr.filter(function (t) { return t.tanggal === todayStr; });
+
+    var grouped = {};
+    var todayTotal = 0;
+    for (var i = 0; i < todayTr.length; i++) {
+        var t = todayTr[i];
+        var sNm = t.sNm || 'Tidak Diketahui';
+        if (!grouped[sNm]) grouped[sNm] = [];
+        grouped[sNm].push(t);
+        todayTotal += t.jumlah;
+    }
+
+    document.getElementById('aBTI').textContent = todayTotal;
+
+    var tiContainer = document.getElementById('aTIList');
+    var supplierNames = Object.keys(grouped).sort();
+
+    if (!supplierNames.length) {
+        tiContainer.innerHTML = '<div class="empty"><i class="fa-solid fa-inbox"></i><p>Belum ada input stok hari ini.<br>' + fDateFull(todayStr) + '</p></div>';
+    } else {
+        var tiHtml = '';
+        for (var s = 0; s < supplierNames.length; s++) {
+            var sName = supplierNames[s];
+            var items = grouped[sName];
+            var grpTotal = 0;
+            for (var g = 0; g < items.length; g++) grpTotal += items[g].jumlah;
+            var cl = sCol(sName);
+
+            tiHtml += '<div class="grp-hdr" id="grp-hdr-' + s + '" onclick="toggleGroup(' + s + ')">' +
+                '<div class="grp-av" style="background:' + cl + '20;color:' + cl + '">' + ini(sName) + '</div>' +
+                '<div class="grp-if">' +
+                '<div class="grp-nm">' + esc(sName) + '</div>' +
+                '<div class="grp-cnt">' + items.length + ' produk &middot; <strong>' + grpTotal + '</strong> stok</div>' +
+                '</div>' +
+                '<div class="grp-chev"><i class="fa-solid fa-chevron-down"></i></div>' +
+                '</div>';
+
+            tiHtml += '<div class="grp-body" id="grp-body-' + s + '">';
+
+            for (var g2 = 0; g2 < items.length; g2++) {
+                var it = items[g2];
+                tiHtml += '<div class="grp-item" onclick="aProdDet(\'' + it.pId + '\')">' +
+                    '<div class="gi-dot"></div>' +
+                    '<div class="gi-if">' +
+                    '<div class="gi-nm">' + esc(it.pNm) + '</div>' +
+                    '<div class="gi-det">' +
+                    (it.kategori ? esc(it.kategori) : '') +
+                    (it.harga ? ' &middot; ' + fRp(it.harga) : '') +
+                    (it.catatan ? ' &middot; ' + esc(it.catatan) : '') +
+                    '</div></div>' +
+                    '<div class="gi-qty">+' + it.jumlah + '</div>' +
+                    '</div>';
+            }
+
+            tiHtml += '</div>';
+        }
+        tiContainer.innerHTML = tiHtml;
+    }
+
+    // Update statistik di reset box
+    updateResetBoxStats();
+
+    // --- Section 2: Semua Produk ---
+    var c = document.getElementById('aPL');
+    var q = (document.getElementById('aPSrch').value || '').toLowerCase();
+    var ps = gd(K.p);
+    if (q) {
+        ps = ps.filter(function (p) {
+            return p.nama.toLowerCase().indexOf(q) !== -1 ||
+                (p.kategori || '').toLowerCase().indexOf(q) !== -1 ||
+                (p.sNm || '').toLowerCase().indexOf(q) !== -1;
+        });
+    }
+    document.getElementById('aBP').textContent = ps.length;
+    if (!ps.length) {
+        c.innerHTML = '<div class="empty"><i class="fa-solid fa-box"></i><p>' + (q ? 'Tidak ditemukan.' : 'Belum ada produk. Tekan + untuk menambahkan.') + '</p></div>';
+        return;
+    }
+    var html = '';
+    for (var p = 0; p < ps.length; p++) {
+        var pr = ps[p];
+        var pcl = sCol(pr.nama);
+        var psc = pr.stok <= 10 ? 'var(--err)' : pr.stok <= 50 ? 'var(--acc)' : 'var(--ok)';
+        html += '<div class="li" onclick="aProdDet(\'' + pr.id + '\')">' +
+            '<div class="li-av" style="background:' + pcl + '20;color:' + pcl + '">' + ini(pr.nama) + '</div>' +
+            '<div class="li-if"><div class="li-n">' + esc(pr.nama) + '</div>' +
+            '<div class="li-s">' + esc(pr.sNm || '-') + (pr.kategori ? ' &middot; ' + esc(pr.kategori) : '') + '</div></div>' +
+            '<div class="li-r"><div class="nm" style="color:' + psc + '">' + pr.stok + '</div><div class="un">stok</div></div></div>';
+    }
+    c.innerHTML = html;
+}
+
+function aProdDet(id) {
+    var allP = gd(K.p);
+    var p = null;
+    for (var i = 0; i < allP.length; i++) { if (allP[i].id === id) { p = allP[i]; break; } }
+    if (!p) return;
+    var allT = gd(K.t);
+    var tr = allT.filter(function (t) { return t.pId === id; })
+        .sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
+    var tm = 0;
+    var tn = 0;
+    for (var j = 0; j < tr.length; j++) {
+        tm += tr[j].jumlah;
+        tn += tr[j].jumlah * tr[j].harga;
+    }
+    var th = '';
+    if (tr.length) {
+        th = '<div style="margin-top:18px"><div class="sec-t" style="font-size:13px">Riwayat (' + tr.length + ')</div>';
+        var limit = Math.min(tr.length, 10);
+        for (var k = 0; k < limit; k++) {
+            var t = tr[k];
+            th += '<div style="background:var(--bg-input);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px">' +
+                '<div><div style="font-weight:600">' + fD(t.tanggal) + '</div>' +
+                '<div style="color:var(--fg-m);font-size:11px">' + esc(t.catatan || '-') + '</div></div>' +
+                '<div style="text-align:right"><div style="color:var(--ok);font-weight:700;font-family:Space Grotesk">+' + t.jumlah + '</div>' +
+                '<div style="color:var(--fg-m);font-size:11px">' + fRp(t.harga) + '</div></div></div>';
+        }
+        th += '</div>';
+    }
+    document.getElementById('mPrDT').textContent = 'Detail Produk';
+    document.getElementById('mPrDC').innerHTML =
+        '<div class="dr"><span class="dl">Nama</span><span class="dv">' + esc(p.nama) + '</span></div>' +
+        '<div class="dr"><span class="dl">Kategori</span><span class="dv">' + esc(p.kategori || '-') + '</span></div>' +
+        '<div class="dr"><span class="dl">Supplier</span><span class="dv">' + esc(p.sNm || '-') + '</span></div>' +
+        '<div class="dr"><span class="dl">Stok</span><span class="dv" style="color:' + (p.stok <= 10 ? 'var(--err)' : 'var(--ok)') + ';font-family:Space Grotesk;font-size:16px">' + p.stok + '</span></div>' +
+        '<div class="dr"><span class="dl">Total Masuk</span><span class="dv">' + tm + '</span></div>' +
+        '<div class="dr"><span class="dl">Harga Terakhir</span><span class="dv">' + fRp(p.hrgTerakhir) + '</span></div>' +
+        '<div class="dr"><span class="dl">Total Nilai</span><span class="dv">' + fRp(tn) + '</span></div>' +
+        th +
+        '<div style="margin-top:18px"><button class="btn btn-d btn-sm btn-f" onclick="aDelProd(\'' + p.id + '\')"><i class="fa-solid fa-trash"></i> Hapus Produk</button></div>';
+    openM('mProdD');
+}
+
+function aDelProd(id) {
+    var allP = gd(K.p);
+    var p = null;
+    for (var i = 0; i < allP.length; i++) { if (allP[i].id === id) { p = allP[i]; break; } }
+    if (!p) return;
+    document.getElementById('mConfTitle').textContent = 'Konfirmasi';
+    document.getElementById('mConfT').textContent = 'Hapus produk "' + p.nama + '" beserta riwayat transaksinya?';
+    document.getElementById('mConfExtra').innerHTML = '';
+    document.getElementById('mConfB').textContent = 'Hapus';
+    document.getElementById('mConfB').className = 'btn btn-d';
+    document.getElementById('mConfB').onclick = function () {
+        sd(K.p, gd(K.p).filter(function (x) { return x.id !== id; }));
+        sd(K.t, gd(K.t).filter(function (x) { return x.pId !== id; }));
+        closeM('mConf');
+        closeM('mProdD');
+        aRProd();
+        aRefresh();
+        toast('Produk dihapus.', 'success');
+    };
+    openM('mConf');
+}
+
+function aRHist() {
+    var c = document.getElementById('aHL');
+    var q = (document.getElementById('aHSrch').value || '').toLowerCase();
+    var tr = gd(K.t).sort(function (a, b) {
+        var d = b.tanggal.localeCompare(a.tanggal);
+        if (d !== 0) return d;
+        return (b.ct || '').localeCompare(a.ct || '');
+    });
+    if (q) {
+        tr = tr.filter(function (t) {
+            return t.pNm.toLowerCase().indexOf(q) !== -1 ||
+                t.sNm.toLowerCase().indexOf(q) !== -1 ||
+                t.tanggal.indexOf(q) !== -1;
+        });
+    }
+    document.getElementById('aBH').textContent = tr.length;
+    if (!tr.length) {
+        c.innerHTML = '<div class="empty"><i class="fa-solid fa-receipt"></i><p>' + (q ? 'Tidak ditemukan.' : 'Belum ada riwayat.') + '</p></div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < tr.length; i++) html += hiH(tr[i]);
+    c.innerHTML = html;
+}
+
+var sCur = 'sHome';
+var clkI = null;
+
+function sNav(pid, el) {
+    var pages = document.querySelectorAll('#supPages .page');
+    for (var i = 0; i < pages.length; i++) pages[i].classList.remove('on');
+    document.getElementById(pid).classList.add('on');
+    var navs = document.querySelectorAll('#supNav .bn');
+    for (var j = 0; j < navs.length; j++) navs[j].classList.remove('on');
+    if (el) el.classList.add('on');
+    sCur = pid;
+    if (pid === 'sHome') sRefresh();
+    if (pid === 'sHist') sRHist();
+}
+
+function startClk() {
+    function u() {
+        var n = new Date();
+        var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        document.getElementById('sDN').textContent = days[n.getDay()];
+        document.getElementById('sDS').textContent = n.getDate() + ' ' + months[n.getMonth()] + ' ' + n.getFullYear();
+        document.getElementById('sTN').textContent = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+    }
+    u();
+    clkI = setInterval(u, 10000);
+}
+
+function sPopulateProdDropdown() {
+    var allProds = gd(K.p);
+    var myProds = allProds.filter(function (p) { return p.sId === cSid; });
+    var sel = document.getElementById('sIProd');
+    sel.innerHTML = '<option value="">-- Pilih Produk --</option>';
+    for (var i = 0; i < myProds.length; i++) {
+        var p = myProds[i];
+        var katLabel = p.kategori ? ' [' + esc(p.kategori) + ']' : '';
+        var stokLabel = ' — Stok: ' + p.stok;
+        sel.innerHTML += '<option value="' + p.id + '">' + esc(p.nama) + katLabel + stokLabel + '</option>';
+    }
+    if (myProds.length === 0) {
+        document.getElementById('sNoProdInfo').style.display = 'flex';
+        document.getElementById('sFormWrap').style.display = 'none';
+    } else {
+        document.getElementById('sNoProdInfo').style.display = 'none';
+        document.getElementById('sFormWrap').style.display = 'block';
+    }
+}
+
+function sOnProdChange() {
+    var prodId = document.getElementById('sIProd').value;
+    var katWrap = document.getElementById('sKatWrap');
+    var katInput = document.getElementById('sIKat');
+    var hrgWrap = document.getElementById('sHrgWrap');
+    var hrgInput = document.getElementById('sIHr');
+    if (!prodId) {
+        katWrap.style.display = 'none';
+        hrgWrap.style.display = 'none';
+        katInput.value = '';
+        hrgInput.value = '';
+        return;
+    }
+    var allProds = gd(K.p);
+    var prod = null;
+    for (var i = 0; i < allProds.length; i++) {
+        if (allProds[i].id === prodId) { prod = allProds[i]; break; }
+    }
+    if (!prod) {
+        katWrap.style.display = 'none';
+        hrgWrap.style.display = 'none';
+        return;
+    }
+    if (prod.kategori) {
+        katInput.value = prod.kategori;
+        katWrap.style.display = 'block';
+    } else {
+        katWrap.style.display = 'none';
+    }
+    if (prod.hrgTerakhir && prod.hrgTerakhir > 0) {
+        hrgInput.value = prod.hrgTerakhir;
+        hrgWrap.style.display = 'block';
+    } else {
+        hrgInput.value = '';
+        hrgWrap.style.display = 'none';
+    }
+    document.getElementById('sIJm').focus();
+}
+
+function sSubmit() {
+    var prodId = document.getElementById('sIProd').value;
+    var jm = parseInt(document.getElementById('sIJm').value) || 0;
+    var hr = parseInt(document.getElementById('sIHr').value) || 0;
+    var ct = document.getElementById('sICt').value.trim();
+    if (!prodId) { toast('Pilih produk terlebih dahulu!', 'error'); return; }
+    if (jm <= 0) { toast('Jumlah stok harus lebih dari 0!', 'error'); return; }
+    var sup = gd(K.s).find(function (s) { return s.id === cSid; });
+    if (!sup) { toast('Data supplier tidak ditemukan!', 'error'); doLogout(); return; }
+    var prods = gd(K.p);
+    var trxs = gd(K.t);
+    var tgl = td();
+    var prod = null;
+    var prodIdx = -1;
+    for (var i = 0; i < prods.length; i++) {
+        if (prods[i].id === prodId) { prod = prods[i]; prodIdx = i; break; }
+    }
+    if (!prod) { toast('Produk tidak ditemukan!', 'error'); return; }
+    prods[prodIdx].stok += jm;
+    if (hr) prods[prodIdx].hrgTerakhir = hr;
+    prods[prodIdx].ua = tgl;
+    trxs.push({
+        id: gid(), tanggal: tgl, sId: cSid, sNm: sup.nama,
+        pId: prod.id, pNm: prod.nama, kategori: prod.kategori || '',
+        jumlah: jm, harga: hr, catatan: ct, ct: new Date().toISOString()
+    });
+    sd(K.p, prods);
+    sd(K.t, trxs);
+    toast('Stok "' + prod.nama + '" ditambahkan. Total: ' + prods[prodIdx].stok, 'success');
+    document.getElementById('sIProd').value = '';
+    document.getElementById('sIJm').value = '';
+    document.getElementById('sIHr').value = '';
+    document.getElementById('sICt').value = '';
+    document.getElementById('sIKat').value = '';
+    document.getElementById('sKatWrap').style.display = 'none';
+    document.getElementById('sHrgWrap').style.display = 'none';
+    sPopulateProdDropdown();
+    sRefreshList();
+}
+
+function sRefresh() {
+    sPopulateProdDropdown();
+    sRefreshList();
+}
+
+function sRefreshList() {
+    var allProds = gd(K.p);
+    var ps = allProds.filter(function (p) {
+        return p.sId === cSid && p.stok > 0;
+    });
+    document.getElementById('sBP').textContent = ps.length;
+    var c = document.getElementById('sPL');
+    if (!ps.length) {
+        c.innerHTML = '<div class="empty"><i class="fa-solid fa-box-open"></i><p>Belum ada produk dengan stok.<br>Gunakan form di atas untuk mulai input stok.</p></div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < ps.length; i++) {
+        var p = ps[i];
+        var cl = sCol(p.nama);
+        var sc = p.stok <= 10 ? 'var(--err)' : p.stok <= 50 ? 'var(--acc)' : 'var(--ok)';
+        html += '<div class="li" onclick="sProdDet(\'' + p.id + '\')">' +
+            '<div class="li-av" style="background:' + cl + '20;color:' + cl + '">' + ini(p.nama) + '</div>' +
+            '<div class="li-if"><div class="li-n">' + esc(p.nama) + '</div>' +
+            '<div class="li-s">' + (p.kategori ? esc(p.kategori) : 'Tanpa kategori') + '</div></div>' +
+            '<div class="li-r"><div class="nm" style="color:' + sc + '">' + p.stok + '</div><div class="un">stok</div></div></div>';
+    }
+    c.innerHTML = html;
+}
+
+function sProdDet(id) {
+    var allP = gd(K.p);
+    var p = null;
+    for (var i = 0; i < allP.length; i++) { if (allP[i].id === id) { p = allP[i]; break; } }
+    if (!p) return;
+    var allT = gd(K.t);
+    var tr = allT.filter(function (t) { return t.pId === id && t.sId === cSid; })
+        .sort(function (a, b) { return b.tanggal.localeCompare(a.tanggal); });
+    var tm = 0;
+    for (var j = 0; j < tr.length; j++) tm += tr[j].jumlah;
+    var th = '';
+    if (tr.length) {
+        th = '<div style="margin-top:16px"><div class="sec-t" style="font-size:13px">Riwayat Masuk (' + tr.length + ')</div>';
+        var limit = Math.min(tr.length, 8);
+        for (var k = 0; k < limit; k++) {
+            var t = tr[k];
+            th += '<div style="background:var(--bg-input);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px">' +
+                '<div><div style="font-weight:600">' + fD(t.tanggal) + '</div>' +
+                '<div style="color:var(--fg-m);font-size:11px">' + esc(t.catatan || '-') + '</div></div>' +
+                '<div style="text-align:right"><div style="color:var(--ok);font-weight:700;font-family:Space Grotesk">+' + t.jumlah + '</div>' +
+                '<div style="color:var(--fg-m);font-size:11px">' + fRp(t.harga) + '</div></div></div>';
+        }
+        th += '</div>';
+    }
+    document.getElementById('mPrDT').textContent = 'Detail Produk';
+    document.getElementById('mPrDC').innerHTML =
+        '<div class="dr"><span class="dl">Nama</span><span class="dv">' + esc(p.nama) + '</span></div>' +
+        '<div class="dr"><span class="dl">Kategori</span><span class="dv">' + esc(p.kategori || '-') + '</span></div>' +
+        '<div class="dr"><span class="dl">Stok Saat Ini</span><span class="dv" style="color:' + (p.stok <= 10 ? 'var(--err)' : 'var(--ok)') + ';font-family:Space Grotesk;font-size:16px">' + p.stok + '</span></div>' +
+        '<div class="dr"><span class="dl">Total Masuk</span><span class="dv">' + tm + '</span></div>' +
+        '<div class="dr"><span class="dl">Harga Terakhir</span><span class="dv">' + fRp(p.hrgTerakhir) + '</span></div>' +
+        th;
+    openM('mProdD');
+}
+
+function sRHist() {
+    var c = document.getElementById('sHL');
+    var tr = gd(K.t).filter(function (t) { return t.sId === cSid; })
+        .sort(function (a, b) {
+            var d = b.tanggal.localeCompare(a.tanggal);
+            if (d !== 0) return d;
+            return (b.ct || '').localeCompare(a.ct || '');
+        });
+    document.getElementById('sBH').textContent = tr.length;
+    if (!tr.length) {
+        c.innerHTML = '<div class="empty"><i class="fa-solid fa-receipt"></i><p>Belum ada riwayat input.</p></div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < tr.length; i++) html += hiH(tr[i]);
+    c.innerHTML = html;
+}
+
+(function () {
+    if (!localStorage.getItem(K.w)) swd('admin123');
+    var ss = gd(K.s);
+    if (!ss.length) {
+        setTimeout(function () {
+            toast('Selamat datang! Login sebagai Admin untuk menambah supplier.', 'info');
+        }, 500);
+    }
+})();
+</script>
+</body>
+</html>
